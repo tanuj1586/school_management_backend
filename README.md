@@ -20,6 +20,38 @@ cors ^2.8.6
 nodemon (dev dependency recommended)
 
 
+⚙️ Installation
+
+1. Clone the repository
+git clone <your-repo-url>
+cd school_management_backend
+2. Install dependencies
+
+Run the following command:
+
+npm install
+📌 This will install all required packages from package.json:
+Production dependencies:
+express
+mongoose
+bcryptjs
+jsonwebtoken
+dotenv
+cors
+Dev dependency (recommended):
+
+You should also install nodemon if not already installed:
+
+npm install nodemon --save-dev
+▶️ Running the Project
+Start server (development mode)
+npm start
+
+Your server will run using:
+
+nodemon index.js
+
+
 
 Make ENV WITH BELOW VARIABLE
 PORT=5000
