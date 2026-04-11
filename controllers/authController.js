@@ -11,8 +11,13 @@ exports.register = async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: "User already exists" });
 
+      // 🔐 Hash password
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
+
+
     // Create new user
-    user = new User({ name, email, password, role });
+    user = new User({ name, email,  password, role });
     await user.save();
 
     // Generate JWT token
@@ -39,17 +44,44 @@ exports.register = async (req, res) => {
   }
 };
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  console.log(user,'user')
-  if(!user) return res.status(400).json({ msg: "User not found" });
- const isMatch = await bcrypt.compare(password, user.password);
-  if(!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+  try {
+    const { email, password } = req.body;
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-  const role = user?.role;
-     const studentId = role === "student" ? user.studentId : null;
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) return res.status(400).json({ msg: "User not found" });
 
-     console.log(studentId,'student id')
-  res.json({ token ,role ,studentId});
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const role = user.role;
+    const studentId = role === "student" ? user.studentId : null;
+
+    res.json({ token, role, studentId });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
 };
+
+
+exports.isAdminExist = async (req, res) => {
+  try {
+    const findAdmin = await User.findOne({ role: 'admin' });
+
+    if (findAdmin) {
+      return res.status(200).json({ exists: true });
+    } else {
+      return res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
